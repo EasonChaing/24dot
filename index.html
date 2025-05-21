@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>24点求解器</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+      text-align: center;
+    }
+    input {
+      width: 50px;
+      margin: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: green;
+      text-align: left;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <h2>24点求解器</h2>
+  <input type="number" id="num1">
+  <input type="number" id="num2"><br>
+  <input type="number" id="num3">
+  <input type="number" id="num4"><br><br>
+  <button onclick="solve()">求解</button>
+  <div id="result">请输入4个数字，点击“求解”查看结果。</div>
+
+  <script>
+    function solve() {
+      const nums = [
+        parseInt(document.getElementById('num1').value),
+        parseInt(document.getElementById('num2').value),
+        parseInt(document.getElementById('num3').value),
+        parseInt(document.getElementById('num4').value)
+      ];
+
+      if (nums.some(isNaN)) {
+        document.getElementById("result").innerText = "请输入有效的数字！";
+        return;
+      }
+
+      const ops = ['+', '-', '*', '/'];
+      const permutations = getPermutations(nums);
+      let solutions = [];
+
+      for (let p of permutations) {
+        for (let o1 of ops) {
+          for (let o2 of ops) {
+            for (let o3 of ops) {
+              const exprs = [
+                `((${p[0]}${o1}${p[1]})${o2}${p[2]})${o3}${p[3]}`,
+                `${p[0]}${o1}(${p[1]}${o2}(${p[2]}${o3}${p[3]}))`
+              ];
+              for (let expr of exprs) {
+                try {
+                  if (Math.abs(eval(expr) - 24) < 1e-10) {
+                    if (!solutions.includes(expr)) {
+                      solutions.push(expr);
+                    }
+                  }
+                } catch (e) {}
+              }
+            }
+          }
+        }
+      }
+
+      const resultDiv = document.getElementById("result");
+      if (solutions.length > 0) {
+        resultDiv.innerHTML = "找到解法：<ul style='text-align:left;display:inline-block'>" +
+          solutions.map(s => `<li>${s} = 24</li>`).join('') + "</ul>";
+      } else {
+        resultDiv.innerText = "无解。";
+      }
+    }
+
+    function getPermutations(arr) {
+      const result = [];
+      function permute(path, options) {
+        if (options.length === 0) return result.push(path);
+        for (let i = 0; i < options.length; i++) {
+          permute([...path, options[i]], options.filter((_, idx) => idx !== i));
+        }
+      }
+      permute([], arr);
+      return result;
+    }
+  </script>
+</body>
+</html>
